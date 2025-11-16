@@ -23,7 +23,6 @@ export default function InstallPrompt() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const choiceResult = await deferredPrompt.userChoice;
-    // You could log choiceResult.outcome if you care
     setDeferredPrompt(null);
     setShow(false);
   }

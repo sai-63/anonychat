@@ -10,7 +10,6 @@ export default function HomePage() {
 
   return (
     <main className="w-full max-w-md px-4">
-      <InstallPrompt />
       <div className="chat-card space-y-4">
         <h1 className="text-2xl font-semibold">PWA Chat</h1>
         <p className="text-sm text-slate-300">
@@ -42,6 +41,7 @@ export default function HomePage() {
           PWA.
         </p>
       </div>
+      <InstallPrompt />
     </main>
   );
 }
