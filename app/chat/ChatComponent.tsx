@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   collection,
   addDoc,
@@ -9,9 +9,9 @@ import {
   query,
   orderBy,
   onSnapshot,
-} from 'firebase/firestore';
-import { db } from '../../lib/firebase';
-import InstallPrompt from '../../components/InstallPrompt';
+} from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import InstallPrompt from "../../components/InstallPrompt";
 
 type ChatMessage = {
   id: string;
@@ -22,21 +22,26 @@ type ChatMessage = {
 
 export default function ChatComponent() {
   const searchParams = useSearchParams();
-  const nameFromQuery = searchParams.get('name') || 'Anonymous';
+  const nameFromQuery = searchParams.get("name") || "Anonymous";
+  const roomFromQuery = searchParams.get("room") || "global";
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isConnected, setIsConnected] = useState(false);
 
-  // Listen to Firestore messages
+  // Listen to Firestore messages for THIS room only
   useEffect(() => {
-    // Check if we're in browser environment
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
+
+    // You can sanitize the room name if you want to be extra safe
+    const roomId = roomFromQuery.trim() || "global";
 
     try {
-      const q = query(collection(db, 'messages'), orderBy('createdAt', 'asc'));
+      const roomCollection = collection(db, roomId);
+      const q = query(roomCollection, orderBy("createdAt", "asc"));
+
       const unsub = onSnapshot(
-        q, 
+        q,
         (snap) => {
           const msgs: ChatMessage[] = [];
           snap.forEach((doc) => {
@@ -52,34 +57,36 @@ export default function ChatComponent() {
           setIsConnected(true);
         },
         (error) => {
-          console.error('Firestore error:', error);
+          console.error("Firestore error:", error);
           setIsConnected(false);
         }
       );
 
       return () => unsub();
     } catch (error) {
-      console.error('Failed to connect to Firestore:', error);
+      console.error("Failed to connect to Firestore:", error);
       setIsConnected(false);
     }
-  }, []);
+  }, [roomFromQuery]); // re-subscribe if room changes
 
-  // Send message
+  // Send message to this room's collection
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
     if (!text) return;
-    setInput('');
+    setInput("");
+
+    const roomId = roomFromQuery.trim() || "global";
 
     try {
-      await addDoc(collection(db, 'messages'), {
+      await addDoc(collection(db, roomId), {
         text,
         name: nameFromQuery,
         createdAt: serverTimestamp(),
       });
     } catch (error) {
-      console.error('Failed to send message:', error);
-      alert('Failed to send message. Please try again.');
+      console.error("Failed to send message:", error);
+      alert("Failed to send message. Please try again.");
     }
   }
 
@@ -101,7 +108,9 @@ export default function ChatComponent() {
       <div className="chat-card flex flex-col h-[80vh]">
         <header className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-lg font-semibold">Global Chat</h1>
+            <h1 className="text-lg font-semibold">
+              Room: <span className="font-mono">{roomFromQuery}</span>
+            </h1>
             <p className="text-xs text-slate-400">
               Signed in as <span className="font-mono">{nameFromQuery}</span>
             </p>
@@ -117,11 +126,13 @@ export default function ChatComponent() {
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 pb-2">
           {!isConnected && messages.length === 0 ? (
             <div className="text-center mt-8">
-              <p className="text-sm text-slate-500">Connecting to chat server...</p>
+              <p className="text-sm text-slate-500">
+                Connecting to chat server...
+              </p>
             </div>
           ) : sortedMessages.length === 0 ? (
             <p className="text-xs text-slate-500 text-center mt-4">
-              No messages yet. Say hi 👋
+              No messages yet in this room. Say hi 👋
             </p>
           ) : (
             sortedMessages.map((m) => (
@@ -129,8 +140,8 @@ export default function ChatComponent() {
                 key={m.id}
                 className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
                   m.name === nameFromQuery
-                    ? 'ml-auto bg-sky-600 text-white rounded-br-none'
-                    : 'mr-auto bg-slate-800 text-slate-50 rounded-bl-none'
+                    ? "ml-auto bg-sky-600 text-white rounded-br-none"
+                    : "mr-auto bg-slate-800 text-slate-50 rounded-bl-none"
                 }`}
               >
                 <p className="text-[10px] opacity-70 mb-0.5">{m.name}</p>
@@ -144,7 +155,7 @@ export default function ChatComponent() {
           <input
             type="text"
             className="flex-1 rounded-xl bg-slate-800 px-3 py-2 text-sm outline-none border border-slate-700 focus:border-sky-500"
-            placeholder="Type a message"
+            placeholder={`Message #${roomFromQuery}`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={!isConnected}
