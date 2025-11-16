@@ -5,6 +5,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   const [name, setName] = useState("");
+  const [room, setRoom] = useState("");
 
   return (
     <main className="w-full max-w-md px-4">
