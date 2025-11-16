@@ -1,20 +1,19 @@
 {
-  "name": "PWA Chat",
-  "short_name": "Chat",
+  "name": "Anonymous Chat",
+  "short_name": "AnonymChat",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
-  "theme_color": "#020617",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "icon/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "icon/png"
     }
   ]
 }

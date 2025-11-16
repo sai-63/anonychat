@@ -1,11 +1,11 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
+import RegisterSW from "./register-sw";
 
 export const metadata: Metadata = {
-  title: "PWA Chat",
+  title: "Anonymous Chat",
   description: "Simple Next.js PWA chat demo",
-  themeColor: "#020617",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#020617" />
       </head>
       <body className="min-h-screen flex items-center justify-center">
+        <RegisterSW />
         {children}
       </body>
     </html>
